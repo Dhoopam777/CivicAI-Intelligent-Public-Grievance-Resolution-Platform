@@ -210,7 +210,7 @@ const ProfilePage = () => {
         {/* COMPLAINT LIST */}
 
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {complaints.map((c) => {
+          {complaints?.map((c) => {
             return (
               <div
                 key={c._id}
