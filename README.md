@@ -1,0 +1,2 @@
+# CivicAI-Intelligent-Public-Grievance-Resolution-Platform
+**CivicAI – Intelligent Public Grievance &amp; Resolution Platform** is a smart platform where citizens can report civic issues like potholes, garbage, water leaks, and streetlight failures. Using AI and location tracking, complaints are routed to the right authorities, tracked in real time, and resolved faster with transparency and accountability.
