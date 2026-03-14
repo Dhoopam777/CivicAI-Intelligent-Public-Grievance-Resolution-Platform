@@ -38,7 +38,7 @@ const ProfilePage = () => {
           description,
           image,
         },
-        { headers: { token } },
+        { headers: { token } }
       );
 
       alert("Complaint submitted");
@@ -68,7 +68,7 @@ const ProfilePage = () => {
         const lng = pos.coords.longitude;
 
         const res = await axios.get(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
         );
 
         const addressData = res.data.address;
@@ -89,7 +89,7 @@ const ProfilePage = () => {
             description: quickDesc,
             image,
           },
-          { headers: { token } },
+          { headers: { token } }
         );
 
         alert("Complaint submitted using location");
@@ -106,11 +106,21 @@ const ProfilePage = () => {
   };
 
   const fetchComplaints = async () => {
-    const res = await axios.get("https://civicai-intelligent-public-grievance.onrender.com/api/complaint/my", {
-      headers: { token },
-    });
+    try {
+      const res = await axios.get(
+        "https://civicai-intelligent-public-grievance.onrender.com/api/complaint/my",
+        { headers: { token } }
+      );
 
-    setComplaints(res.data.complaints);
+      const data = Array.isArray(res.data.complaints)
+        ? res.data.complaints
+        : [];
+
+      setComplaints(data);
+    } catch (err) {
+      console.error(err);
+      setComplaints([]);
+    }
   };
 
   useEffect(() => {
@@ -210,28 +220,31 @@ const ProfilePage = () => {
         {/* COMPLAINT LIST */}
 
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {complaints?.map((c) => {
-            return (
-              <div
-                key={c._id}
-                className="glass card-hover p-6 rounded-xl shadow-lg"
-              >
-                <h3 className="font-bold mb-2">{c.category}</h3>
+          {(Array.isArray(complaints) ? complaints : []).map((c) => (
+            <div
+              key={c._id}
+              className="glass card-hover p-6 rounded-xl shadow-lg"
+            >
+              <h3 className="font-bold mb-2">{c.category}</h3>
 
-                <p>{c.description}</p>
+              <p>{c.description}</p>
 
-                <p className="text-sm mt-2">
-                  <b>City:</b> {c.city}
-                </p>
+              <p className="text-sm mt-2">
+                <b>City:</b> {c.city}
+              </p>
 
-                <p className="text-sm">
-                  <b>Status:</b> {c.status}
-                </p>
+              <p className="text-sm">
+                <b>Status:</b> {c.status}
+              </p>
 
-                {c.image && <img src={c.image} className="mt-3 rounded-lg" />}
-              </div>
-            );
-          })}
+              {c.image && (
+                <img
+                  src={c.image}
+                  className="mt-3 rounded-lg"
+                />
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </>
