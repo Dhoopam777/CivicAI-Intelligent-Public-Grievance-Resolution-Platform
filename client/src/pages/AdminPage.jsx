@@ -22,7 +22,7 @@ const AdminPage = () => {
       { headers:{ token } }
     );
 
-    setComplaints(res.data);
+    setComplaints(res.data.complaints);
     setFiltered(res.data);
 
   };

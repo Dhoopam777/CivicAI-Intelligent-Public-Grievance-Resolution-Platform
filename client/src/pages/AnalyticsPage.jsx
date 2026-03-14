@@ -26,7 +26,7 @@ const AnalyticsPage = () => {
       { headers:{ token } }
     );
 
-    setComplaints(res.data);
+    setComplaints(res.data.complaints);
 
   };
 
