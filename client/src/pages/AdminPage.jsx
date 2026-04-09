@@ -47,14 +47,14 @@ const AdminPage = () => {
       setIsFetching(false);
     } catch (error) {
       console.error("Failed to fetch complaints:", error);
-      
+
       const isWakeupError = !error.response || error.response.status === 502 || error.response.status === 503;
 
       if (isWakeupError && retryCount < 15) {
         setServerWaking(true);
         setTimeout(() => fetchComplaints(retryCount + 1), 3000);
       } else {
-        toast.error(error.response?.data?.message || "Database error. Check Render backend logs.");
+        toast.error(error.response?.data?.message || "Database error. Check Render backend logs.", { autoClose: 10000 });
         setIsFetching(false);
         setServerWaking(false);
       }
