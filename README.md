@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# Smart Complaint Management System 🏙️
+# CivicAI – Intelligent Public Grievance & Resolution Platform 🏙️
 
 A smart civic complaint management platform where users can register complaints about issues like potholes, garbage, or water leaks, and track their resolution. Built using the MERN stack with Tailwind CSS and Cloudinary integration.
 
@@ -33,7 +32,4 @@ cd your-repo-name
 npm install
 cd client
 npm install
-=======
-# CivicAI-Intelligent-Public-Grievance-Resolution-Platform
-**CivicAI – Intelligent Public Grievance &amp; Resolution Platform** is a smart platform where citizens can report civic issues like potholes, garbage, water leaks, and streetlight failures. Using AI and location tracking, complaints are routed to the right authorities, tracked in real time, and resolved faster with transparency and accountability.
->>>>>>> a594755a7a42b43a5ab79c45c655b55b9dcba730
+```
