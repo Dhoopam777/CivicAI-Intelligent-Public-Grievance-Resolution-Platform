@@ -1,6 +1,7 @@
 import cloudinary from "../config/cloudinary.js";
 import geocoder from "../config/geocoder.js";
 import Complaint from "../models/Complaint.js";
+import User from "../models/User.js";
 
 export const createComplaint = async (req, res) => {
   try {

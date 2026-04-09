@@ -37,7 +37,7 @@ const AnalyticsPage = () => {
       const data = Array.isArray(res.data) ? res.data : (res.data?.complaints || []);
       setComplaints(data);
     } catch (err) {
-      console.error("Analytics fetch failed:", err);
+      console.error("Analytics fetch failed:", err.response?.data?.message || err.message);
     }
 
   };

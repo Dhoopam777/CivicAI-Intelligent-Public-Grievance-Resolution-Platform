@@ -2,8 +2,6 @@ import axios from "axios";
 import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
-import "leaflet.heat/dist/leaflet-heat.js";
-window.L = L;
 
 import { useEffect, useState } from "react";
 import {
@@ -20,30 +18,49 @@ const HeatmapLayer = ({ data, enabled }) => {
   useEffect(() => {
     if (!enabled) return;
 
-    const points = Array.isArray(data)
-      ? data
-        .filter((c) => c.location)
-        .map((c) => [c.location.lat, c.location.lng, 1]) // Max intensity for vibrant colors
-      : [];
+    let heatLayerInstance = null;
+    let isMounted = true;
 
-    const heat = L.heatLayer(points, {
-      radius: 35, // Larger radius for better visibility
-      blur: 25,
-      maxZoom: 17,
-      max: 1.0,
-      gradient: {
-        0.4: 'blue',
-        0.6: 'cyan',
-        0.7: 'lime',
-        0.8: 'yellow',
-        1.0: 'red'
-      }
-    });
+    const renderHeatmap = async () => {
+      // Safely load leaflet-heat AFTER window.L is assigned (Fixes Vite import hoisting bugs)
+      window.L = L;
+      await import("leaflet.heat");
 
-    heat.addTo(map);
+      if (!isMounted) return;
+
+      const points = Array.isArray(data)
+        ? data
+          .filter((c) => c.location && typeof c.location.lat === "number" && typeof c.location.lng === "number")
+          .map((c) => [c.location.lat, c.location.lng, 1]) // Max intensity for vibrant colors
+        : [];
+
+      // Prevent map crash if there are no valid points
+      if (points.length === 0) return;
+
+      heatLayerInstance = L.heatLayer(points, {
+        radius: 35, // Larger radius for better visibility
+        blur: 25,
+        maxZoom: 17,
+        max: 1.0,
+        gradient: {
+          0.4: 'blue',
+          0.6: 'cyan',
+          0.7: 'lime',
+          0.8: 'yellow',
+          1.0: 'red'
+        }
+      });
+
+      heatLayerInstance.addTo(map);
+    };
+
+    renderHeatmap();
 
     return () => {
-      map.removeLayer(heat);
+      isMounted = false;
+      if (heatLayerInstance && map) {
+        map.removeLayer(heatLayerInstance);
+      }
     };
   }, [data, enabled, map]);
 
@@ -86,7 +103,7 @@ const MapPage = () => {
       setIsLoading(false);
       setServerWaking(false);
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Fetch error:", err.response?.data?.message || err.message);
       const isWakeupError = !err.response || err.response.status === 502 || err.response.status === 503;
 
       if (isWakeupError && retryCount < 15) {
@@ -228,7 +245,7 @@ const MapPage = () => {
             {markers &&
               Array.isArray(filtered) &&
               filtered.map((c) => {
-                if (!c.location) return null;
+                if (!c.location || typeof c.location.lat !== "number" || typeof c.location.lng !== "number") return null;
 
                 return (
                   <CircleMarker

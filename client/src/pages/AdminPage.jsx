@@ -46,7 +46,7 @@ const AdminPage = () => {
       setServerWaking(false);
       setIsFetching(false);
     } catch (error) {
-      console.error("Failed to fetch complaints:", error);
+      console.error("Failed to fetch complaints:", error.response?.data?.message || error.message);
 
       const isWakeupError = !error.response || error.response.status === 502 || error.response.status === 503;
 
