@@ -28,16 +28,22 @@ const AdminPage = () => {
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     try {
+      // Safely pass headers only if token exists
+      const headers = token ? { token } : {};
+
       const res = await axios.get(
         `${API_URL}/api/complaint`,
-        { headers: { token } }
+        { headers }
       );
 
       const data = Array.isArray(res.data) ? res.data : (res.data?.complaints || []);
+      if (data.length === 0) toast.info("No complaints found in database.");
+
       setComplaints(data);
       setFiltered(data);
     } catch (error) {
       console.error("Failed to fetch complaints:", error);
+      toast.error("Failed to connect to the database.");
     }
   };
 
@@ -79,10 +85,11 @@ const AdminPage = () => {
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     try {
+      const headers = token ? { token } : {};
       await axios.put(
         `${API_URL}/api/complaint/${id}`,
         { status },
-        { headers: { token } }
+        { headers }
       );
 
       toast.success(`Complaint marked as ${status}`);
@@ -128,10 +135,11 @@ const AdminPage = () => {
 
     const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
     try {
+      const headers = token ? { token } : {};
       const { data } = await axios.post(
         `${API_URL}/api/complaint/${selected._id}/comment`,
         { text: newComment },
-        { headers: { token } }
+        { headers }
       );
       toast.success("Comment added!");
       setNewComment("");
