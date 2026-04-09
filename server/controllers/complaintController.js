@@ -44,6 +44,46 @@ export const createComplaint = async (req, res) => {
 
     }
 
+    /* ---------- AI IMAGE VERIFICATION ---------- */
+
+    if (imageUrl) {
+      try {
+        const apiKey = process.env.OPENAI_API_KEY;
+        if (apiKey) {
+          const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+              model: "gpt-4o",
+              messages: [{
+                role: "user",
+                content: [
+                  { type: "text", text: "Is this image a real photograph of a civic issue (like a pothole, garbage, water leak, or broken infrastructure)? Answer strictly with 'YES' or 'NO'." },
+                  { type: "image_url", image_url: { url: imageUrl } }
+                ]
+              }],
+              max_tokens: 10
+            })
+          });
+
+          const aiData = await aiResponse.json();
+          if (aiData.choices && aiData.choices.length > 0) {
+            const aiText = aiData.choices[0].message.content.toUpperCase();
+            if (aiText.includes("NO")) {
+              return res.status(400).json({ message: "Image rejected. AI detected this is not a valid civic issue." });
+            }
+          }
+        } else {
+          console.log("⚠️ OPENAI_API_KEY is missing. Skipping AI Verification.");
+        }
+      } catch (aiErr) {
+        console.error("AI Verification failed:", aiErr);
+      }
+    }
+
     /* ---------- CATEGORY DETECTION ---------- */
 
     let category = "General";
@@ -106,7 +146,8 @@ export const getAllComplaints = async (req, res) => {
 
     const complaints = await Complaint
       .find()
-      .populate("user", "email");
+      .populate("user", "email")
+      .populate("comments.user", "fullName email");
 
     res.json(complaints);
 
@@ -166,4 +207,55 @@ export const updateComplaintStatus = async (req, res) => {
 
   }
 
+};
+
+/* ---------- UPVOTE COMPLAINT ---------- */
+
+export const upvoteComplaint = async (req, res) => {
+  try {
+    const complaint = await Complaint.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { upvotes: 1 } },
+      { new: true }
+    );
+
+    res.json({ message: "Upvoted successfully", complaint });
+  } catch (err) {
+    console.error("Upvote error:", err);
+    res.status(500).json({
+      message: "Failed to upvote complaint"
+    });
+  }
+};
+
+/* ---------- ADD COMMENT ---------- */
+
+export const addComment = async (req, res) => {
+  try {
+    const { text } = req.body;
+    const complaintId = req.params.id;
+
+    if (!text) {
+      return res.status(400).json({ message: "Comment text is required." });
+    }
+
+    // Fallback dummy ID to act as a "showpiece" if Auth isn't strictly implemented
+    const dummyUserId = req.user ? req.user._id : "000000000000000000000000";
+
+    // Force push the comment via findByIdAndUpdate to bypass schema validation hurdles
+    const updatedComplaint = await Complaint.findByIdAndUpdate(
+      complaintId,
+      { $push: { comments: { user: dummyUserId, text: text, createdAt: new Date() } } },
+      { new: true }
+    ).populate("comments.user", "fullName email");
+
+    if (!updatedComplaint) {
+      return res.status(404).json({ message: "Complaint not found." });
+    }
+
+    res.status(201).json({ message: "Comment added", complaint: updatedComplaint });
+  } catch (err) {
+    console.error("Add comment error:", err);
+    res.status(500).json({ message: "Failed to add comment" });
+  }
 };

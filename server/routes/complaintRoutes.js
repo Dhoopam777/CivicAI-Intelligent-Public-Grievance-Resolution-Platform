@@ -2,10 +2,12 @@ import express from "express";
 import multer from "multer";
 
 import {
-    createComplaint,
-    getAllComplaints,
-    getMyComplaints,
-    updateComplaintStatus
+  addComment,
+  createComplaint,
+  getAllComplaints,
+  getMyComplaints,
+  updateComplaintStatus,
+  upvoteComplaint
 } from "../controllers/complaintController.js";
 
 import { protectRoute } from "../middleware/auth.js";
@@ -43,6 +45,18 @@ router.put(
   "/:id",
   protectRoute,
   updateComplaintStatus
+);
+
+router.put(
+  "/:id/upvote",
+  protectRoute,
+  upvoteComplaint
+);
+
+router.post(
+  "/:id/comment",
+  protectRoute,
+  addComment
 );
 
 export default router;

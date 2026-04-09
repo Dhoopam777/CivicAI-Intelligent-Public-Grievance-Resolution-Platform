@@ -1,111 +1,114 @@
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import ParticlesBackground from "../components/ParticlesBackground";
+import { toast } from "react-toastify";
 
 
 const LoginPage = () => {
 
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleLogin = async(e)=>{
+  const handleLogin = async (e) => {
 
     e.preventDefault();
+    setIsLoading(true);
 
-    try{
+    try {
 
       const res = await axios.post(
-        "https://civicai-intelligent-public-grievance.onrender.com/api/auth/login",
-        { email,password }
+        "http://localhost:5000/api/auth/login",
+        { email, password }
       );
 
-      localStorage.setItem("token",res.data.token);
+      if (res.data.success) {
+        localStorage.setItem("token", res.data.token);
+        toast.success("Login successful!");
+        navigate("/profile");
+      } else {
+        toast.error(res.data.message || "Login failed");
+      }
 
-      alert("Login successful");
-
-      navigate("/profile");
-
-    }catch(err){
+    } catch (err) {
       console.error(err);
-      alert("Login failed");
-
+      toast.error(err.response?.data?.message || "Login failed due to a server error");
+    } finally {
+      setIsLoading(false);
     }
 
   };
 
-  return(
-    <> 
-        <ParticlesBackground />
+  return (
+    <>
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
 
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-800">
+        <div className="bg-gray-900/80 backdrop-blur-2xl border border-gray-600 p-10 rounded-3xl shadow-2xl hover:border-gray-400 w-full max-w-md text-white transition-all duration-500 animate-slideUp">
 
-      <div className="bg-white/10 backdrop-blur-md p-10 rounded-xl shadow-2xl w-full max-w-md text-white transition hover:shadow-indigo-500/40">
+          <h1 className="text-3xl font-bold text-center mb-6">
+            Login to CivicAI
+          </h1>
 
-        <h1 className="text-3xl font-bold text-center mb-6">
-          Login to CivicAI
-        </h1>
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="p-3 rounded-xl bg-gray-800/80 border border-gray-500 text-white placeholder-gray-400 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300"
+            />
 
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)}
-            className="p-3 rounded-lg bg-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="p-3 rounded-xl bg-gray-800/80 border border-gray-500 text-white placeholder-gray-400 focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300"
+            />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)}
-            className="p-3 rounded-lg bg-white/20 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`mt-2 p-3 rounded-xl font-bold transition transform ${isLoading ? 'bg-gray-400 cursor-not-allowed text-black' : 'bg-white text-black hover:bg-gray-200 hover:scale-105'}`}
+            >
+              {isLoading ? "Logging in..." : "Login"}
+            </button>
 
-          <button
-            type="submit"
-            className="mt-2 p-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition transform hover:scale-105"
-          >
-            Login
+          </form>
+
+          <div className="flex items-center my-6">
+
+            <div className="flex-grow h-px bg-gray-400"></div>
+
+            <span className="px-3 text-sm text-gray-300">or</span>
+
+            <div className="flex-grow h-px bg-gray-400"></div>
+
+          </div>
+
+          <button className="w-full p-3 bg-transparent text-white border border-white rounded-xl hover:bg-white hover:text-black transition">
+            Continue with Google
           </button>
 
-        </form>
+          <p className="text-center text-sm mt-6 text-gray-300">
 
-        <div className="flex items-center my-6">
+            Don't have an account?
 
-          <div className="flex-grow h-px bg-gray-400"></div>
+            <span
+              onClick={() => navigate("/register")}
+              className="ml-2 text-white font-bold cursor-pointer hover:underline"
+            >
+              Register
+            </span>
 
-          <span className="px-3 text-sm text-gray-300">or</span>
-
-          <div className="flex-grow h-px bg-gray-400"></div>
+          </p>
 
         </div>
 
-        <button className="w-full p-3 bg-white text-black rounded-lg hover:bg-gray-200 transition">
-          Continue with Google
-        </button>
-
-        <p className="text-center text-sm mt-6 text-gray-300">
-
-          Don't have an account?
-
-          <span
-            onClick={()=>navigate("/register")}
-            className="ml-2 text-indigo-400 cursor-pointer hover:underline"
-          >
-            Register
-          </span>
-
-        </p>
-
       </div>
-
-    </div>
     </>
   );
 
